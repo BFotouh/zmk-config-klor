@@ -11,8 +11,13 @@ manifest:
       remote: zmkfirmware
       revision: main
       import: app/west.yml
+    # Fork of badjeff/zmk-output-behavior-listener fixing a multi-instance
+    # bug (DEVICE_DT_INST_DEFINE hardcoded instance 0) that breaks as
+    # soon as a build has two nodes of the same output compatible - we
+    # hit this with two zmk,output-split-output-relay proxies (haptic +
+    # piezo). See that repo's commit log for details.
     - name: zmk-output-behavior-listener
-      remote: badjeff
+      remote: BFotouh
       revision: main
     # Fork of badjeff/zmk-drv2605-driver with the DT compatible string
     # renamed ti,drv2605 -> badjeff,drv2605 to avoid colliding with
