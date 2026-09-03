@@ -108,4 +108,21 @@
 		prechargep = <0x22>;
       		inversion-on;
 	};
+
+	// DRV2605L (untested hardware) driving the AAC ELV1411A LRA. No
+	// address collision with the SSD1306 above (0x5a vs 0x3c). Only
+	// library/standby-ms are exposed as devicetree properties by this
+	// driver - LRA autocalibration (targeting the LRA's ~150Hz/2Vrms
+	// rating) is a chip-internal/runtime concern, not something this
+	// driver surfaces here. See MIGRATION_NOTES.md bring-up milestones.
+	drv2605_0: drv2605@5a {
+		compatible = "ti,drv2605";
+		reg = <0x5a>;
+
+		/* Library to use, 0 = Empty, 1-5 are ERM, 6 is LRA. */
+		library = <6>;
+
+		/* switch to standby mode after idling for 1000ms */
+		standby-ms = <1000>;
+	};
 };
