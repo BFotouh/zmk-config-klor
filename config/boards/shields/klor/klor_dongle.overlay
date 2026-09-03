@@ -50,6 +50,41 @@
 		sensors = <&left_encoder &right_encoder>;
 	};
 
+	// Haptic feedback send side - the dongle has no DRV2605/LRA of its
+	// own, so lra0_relay is a proxy: triggering &ob_lra0 broadcasts to
+	// both halves over BLE via zmk-split-peripheral-output-relay
+	// (relay-channel 201, matching klor_common.dtsi's receive side on
+	// each half - see MIGRATION_NOTES.md, untested end to end).
+	lra0_relay: lra0_relay {
+		compatible = "zmk,output-split-output-relay";
+		#binding-cells = <0>;
+	};
+
+	output_relay_config_201: output_relay_config_201 {
+		compatible = "zmk,split-peripheral-output-relay";
+		device = <&lra0_relay>;
+		relay-channel = <201>;
+	};
+
+	ob_lra0: ob_generic_lra0 {
+		compatible = "zmk,output-behavior-generic";
+		#binding-cells = <0>;
+		device = <&lra0_relay>;
+		/* 7 = "Soft Bump" at 100%, per zmk-output-behavior-listener's README */
+		force = <7>;
+	};
+
+	// Trigger on entering RAISE or LOWER. Layer indices are klor.keymap's
+	// raw values (BASE=0 RAISE=1 LOWER=2 ADJUST=3) spelled out as plain
+	// integers - this file is preprocessed separately from klor.keymap,
+	// so its #defines aren't visible here. 1 = OUTPUT_SOURCE_LAYER_STATE_CHANGE.
+	lra0_obl__enter_raise_or_lower: lra0_obl__enter_raise_or_lower {
+		compatible = "zmk,output-behavior-listener";
+		layers = <1 2>; /* RAISE, LOWER */
+		sources = <1>;  /* OUTPUT_SOURCE_LAYER_STATE_CHANGE */
+		bindings = <&ob_lra0>;
+	};
+
 	// Must match klor.dtsi's default_transform exactly (same node name,
 	// same map) - ZMK requires identical matrix transforms/physical
 	// layouts, with identical devicetree node names, across every part

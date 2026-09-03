@@ -44,6 +44,23 @@
         sensors = <&left_encoder &right_encoder>;
     };
 
+    // Haptic feedback receive side - the dongle (central) triggers this
+    // over BLE via zmk-split-peripheral-output-relay; drv2605_0 is
+    // defined below in the pro_micro_i2c block. relay-channel 201 must
+    // match klor_dongle.overlay's sender config exactly. Untested -
+    // see MIGRATION_NOTES.md bring-up milestones.
+    lra0: output_haptic_fb_0 {
+        compatible = "zmk,output-haptic-feedback";
+        #binding-cells = <0>;
+        driver = "drv2605";
+        device = <&drv2605_0>;
+    };
+
+    output_relay_config_201: output_relay_config_201 {
+        compatible = "zmk,split-peripheral-output-relay";
+        relay-channel = <201>;
+        device = <&lra0>;
+    };
 };
 
 // RGB underglow (SK6812MINI-E x21, south-facing). This project only ever
