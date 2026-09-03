@@ -10,20 +10,21 @@ endif # LEFT
 
 
 
-if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
-
-    config ZMK_SPLIT
-        default y
-
-# Only whichever build actually resolves to central (either via the
-# default above, or via a peripheral cmake-args override) gets Studio's
-# RPC subsystem built in - it costs real RAM, so peripherals skip it.
+# Not scoped to any one shield - applies to whichever build resolves to
+# central (via a shield's own default, or a peripheral cmake-args
+# override), left/right/dongle alike. Studio's RPC subsystem costs real
+# RAM, so peripherals skip it.
 if ZMK_SPLIT_ROLE_CENTRAL
 
     config ZMK_STUDIO
         default y
 
 endif # ZMK_SPLIT_ROLE_CENTRAL
+
+if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
+
+    config ZMK_SPLIT
+        default y
 
 if ZMK_DISPLAY
 
@@ -56,3 +57,30 @@ endif # LVGL
 
 
 endif # LEFT RIGHT
+
+
+
+if SHIELD_KLOR_DONGLE
+
+    # Max 16 characters
+    config ZMK_KEYBOARD_NAME
+        default "KLOR"
+
+    config ZMK_SPLIT_ROLE_CENTRAL
+        default y
+
+    config ZMK_SPLIT
+        default y
+
+    # Left + right = 2 peripherals
+    config ZMK_SPLIT_BLE_CENTRAL_PERIPHERALS
+        default 2
+
+    # 2 peripherals + 5 BT profiles
+    config BT_MAX_CONN
+        default 7
+
+    config BT_MAX_PAIRED
+        default 7
+
+endif # DONGLE

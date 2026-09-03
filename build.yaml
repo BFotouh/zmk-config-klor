@@ -14,7 +14,13 @@
 
 include:
   - board: nice_nano@2.0.0//zmk
-    shield: klor_left
+    shield: klor_dongle
     snippet: studio-rpc-usb-uart
   - board: nice_nano@2.0.0//zmk
+    shield: klor_left
+    cmake-args: -DCONFIG_ZMK_SPLIT=y -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
+  - board: nice_nano@2.0.0//zmk
     shield: klor_right
+    cmake-args: -DCONFIG_ZMK_SPLIT=y -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
+  - board: nice_nano@2.0.0//zmk
+    shield: settings_reset
