@@ -110,19 +110,23 @@
 	};
 
 	// DRV2605L (untested hardware) driving the AAC ELV1411A LRA. No
-	// address collision with the SSD1306 above (0x5a vs 0x3c). Only
-	// library/standby-ms are exposed as devicetree properties by this
-	// driver - LRA autocalibration (targeting the LRA's ~150Hz/2Vrms
-	// rating) is a chip-internal/runtime concern, not something this
-	// driver surfaces here. See MIGRATION_NOTES.md bring-up milestones.
+	// address collision with the SSD1306 above (0x5a vs 0x3c). Uses
+	// Zephyr's own in-tree haptics driver (ti,drv2605.yaml) rather than
+	// badjeff/zmk-drv2605-driver - that out-of-tree module claims the
+	// same compatible string and conflicts with Zephyr's now-native
+	// support (confirmed via CI: "both .../zmk-drv2605-driver/... and
+	// .../zephyr/dts/bindings/haptics/ti,drv2605.yaml have 'compatible:
+	// ti,drv2605'"). The native binding is also richer - vib-rated-mv
+	// lets us encode the ELV1411A's actual 2Vrms rating directly, which
+	// the community driver didn't expose at all. Resonant-frequency
+	// tracking (~150Hz) is handled by the chip's own closed-loop
+	// auto-resonance, not a devicetree property. See MIGRATION_NOTES.md
+	// bring-up milestones - this hasn't been powered up yet.
 	drv2605_0: drv2605@5a {
 		compatible = "ti,drv2605";
 		reg = <0x5a>;
 
-		/* Library to use, 0 = Empty, 1-5 are ERM, 6 is LRA. */
-		library = <6>;
-
-		/* switch to standby mode after idling for 1000ms */
-		standby-ms = <1000>;
+		actuator-mode = "LRA";
+		vib-rated-mv = <2000>;
 	};
 };
