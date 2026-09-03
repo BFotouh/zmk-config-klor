@@ -111,22 +111,24 @@
 
 	// DRV2605L (untested hardware) driving the AAC ELV1411A LRA. No
 	// address collision with the SSD1306 above (0x5a vs 0x3c). Uses
-	// Zephyr's own in-tree haptics driver (ti,drv2605.yaml) rather than
-	// badjeff/zmk-drv2605-driver - that out-of-tree module claims the
-	// same compatible string and conflicts with Zephyr's now-native
-	// support (confirmed via CI: "both .../zmk-drv2605-driver/... and
-	// .../zephyr/dts/bindings/haptics/ti,drv2605.yaml have 'compatible:
-	// ti,drv2605'"). The native binding is also richer - vib-rated-mv
-	// lets us encode the ELV1411A's actual 2Vrms rating directly, which
-	// the community driver didn't expose at all. Resonant-frequency
-	// tracking (~150Hz) is handled by the chip's own closed-loop
-	// auto-resonance, not a devicetree property. See MIGRATION_NOTES.md
-	// bring-up milestones - this hasn't been powered up yet.
+	// badjeff/zmk-drv2605-driver (via BFotouh's fork, see west.yml) so
+	// zmk-output-behavior-listener's DRV2605 trigger code has a
+	// sensor_driver_api-compatible device to call into - Zephyr's own
+	// native ti,drv2605 haptics driver compiles fine but that listener
+	// code is hard-wired to this community driver's custom sensor
+	// attributes (DRV2605_ATTR_WAVEFORM/GO), not the native haptics
+	// API. LRA resonant-frequency/voltage calibration (~150Hz, 2Vrms)
+	// isn't a devicetree property here either way - chip-internal
+	// closed-loop auto-resonance handles it at runtime. See
+	// MIGRATION_NOTES.md bring-up milestones - untested hardware.
 	drv2605_0: drv2605@5a {
-		compatible = "ti,drv2605";
+		compatible = "badjeff,drv2605";
 		reg = <0x5a>;
 
-		actuator-mode = "LRA";
-		vib-rated-mv = <2000>;
+		/* Library to use, 0 = Empty, 1-5 are ERM, 6 is LRA. */
+		library = <6>;
+
+		/* switch to standby mode after idling for 1000ms */
+		standby-ms = <1000>;
 	};
 };

@@ -4,6 +4,8 @@ manifest:
       url-base: https://github.com/zmkfirmware
     - name: badjeff
       url-base: https://github.com/badjeff
+    - name: BFotouh
+      url-base: https://github.com/BFotouh
   projects:
     - name: zmk
       remote: zmkfirmware
@@ -11,6 +13,13 @@ manifest:
       import: app/west.yml
     - name: zmk-output-behavior-listener
       remote: badjeff
+      revision: main
+    # Fork of badjeff/zmk-drv2605-driver with the DT compatible string
+    # renamed ti,drv2605 -> badjeff,drv2605 to avoid colliding with
+    # Zephyr's own native ti,drv2605 haptics binding - see that repo's
+    # README for details.
+    - name: zmk-drv2605-driver
+      remote: BFotouh
       revision: main
   self:
     path: config

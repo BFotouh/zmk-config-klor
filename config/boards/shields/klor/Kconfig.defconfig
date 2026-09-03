@@ -32,9 +32,6 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
     config ZMK_DISPLAY
         default y
 
-    config HAPTICS
-        default y
-
 if ZMK_DISPLAY
 
     config I2C
