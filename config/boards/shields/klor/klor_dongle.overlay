@@ -74,15 +74,39 @@
 		force = <7>;
 	};
 
-	// Trigger on entering RAISE or LOWER. Layer indices are klor.keymap's
-	// raw values (BASE=0 RAISE=1 LOWER=2 ADJUST=3) spelled out as plain
-	// integers - this file is preprocessed separately from klor.keymap,
-	// so its #defines aren't visible here. 1 = OUTPUT_SOURCE_LAYER_STATE_CHANGE.
+	// Piezo beep send side - same proxy pattern as the haptic relay
+	// above, separate channel (202) so it doesn't collide with it.
+	piezo0_relay: piezo0_relay {
+		compatible = "zmk,output-split-output-relay";
+		#binding-cells = <0>;
+	};
+
+	output_relay_config_202: output_relay_config_202 {
+		compatible = "zmk,split-peripheral-output-relay";
+		device = <&piezo0_relay>;
+		relay-channel = <202>;
+	};
+
+	ob_piezo0: ob_generic_piezo0 {
+		compatible = "zmk,output-behavior-generic";
+		#binding-cells = <0>;
+		device = <&piezo0_relay>;
+		/* PWM duty cycle (0-256ish) driving the 2kHz tone set on the
+		 * peripheral's pwm_piezo0 node - not a frequency, that's fixed
+		 * at devicetree level on the receiving end. */
+		force = <128>;
+	};
+
+	// Trigger on entering RAISE or LOWER: haptic buzz + piezo beep
+	// together. Layer indices are klor.keymap's raw values (BASE=0
+	// RAISE=1 LOWER=2 ADJUST=3) spelled out as plain integers - this
+	// file is preprocessed separately from klor.keymap, so its
+	// #defines aren't visible here. 1 = OUTPUT_SOURCE_LAYER_STATE_CHANGE.
 	lra0_obl__enter_raise_or_lower: lra0_obl__enter_raise_or_lower {
 		compatible = "zmk,output-behavior-listener";
 		layers = <1 2>; /* RAISE, LOWER */
 		sources = <1>;  /* OUTPUT_SOURCE_LAYER_STATE_CHANGE */
-		bindings = <&ob_lra0>;
+		bindings = <&ob_lra0 &ob_piezo0>;
 	};
 
 	// Must match klor.dtsi's default_transform exactly (same node name,
