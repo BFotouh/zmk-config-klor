@@ -2,6 +2,17 @@
 
 Repo cloned from `https://github.com/BFotouh/zmk-config-klor.git` into this directory (single `master` branch, working tree clean, no CMakeLists.txt or build artifacts committed).
 
+## Status (branch `feat/dongle-main`, not yet merged to `master`)
+
+Everything below this point is the original audit, written before any changes. What's actually been built since, all pushed to `feat/dongle-main` and verified green via real GitHub Actions runs (not just "should work" — every commit was watched through CI, failures included):
+
+- **Migration to `main`**: done. Board target `nice_nano@2.0.0//zmk`, deprecated `CONFIG_WS2812_STRIP` dropped, `ZMK_SPLIT_ROLE_CENTRAL` rename applied, RGB devicetree moved out of the now-nonfunctional per-board-overlay mechanism into the shared shield file (found via CI, not anticipated by the original audit).
+- **ZMK Studio**: enabled on whichever build is central, gated by a `zmk,physical-layout` node (cosmetic key positions generated from this repo's own keymap structure — the QMK sibling repo's coordinates turned out unreliable past the first 20 of 44 keys; see the comment above `default_layout` in `klor.dtsi` for the full reasoning).
+- **Dongle conversion**: done. `build.yaml` produces 4 firmware files — `klor_dongle`, `klor_left`, `klor_right`, `settings_reset` — confirmed by downloading the actual CI artifact.
+- **Haptic**: DRV2605L on I2C 0x5A, full trigger chain wired (dongle listens for entering RAISE/LOWER → relays over BLE → real haptic pulse on both halves' DRV2605). Hit and fixed two real upstream bugs along the way (both now forked under BFotouh, see west.yml comments): Zephyr's own native `ti,drv2605` binding collided with badjeff's driver (fork renames the compatible string), and `zmk-output-behavior-listener` hardcoded device instance 0 in five macros, breaking as soon as two nodes share a compatible (fork fixes all five).
+- **Piezo**: P1.06 (confirmed by hardware owner), same relay pattern as haptic on a separate channel, beeps together with the haptic buzz on the same RAISE/LOWER trigger.
+- **Not done**: nothing has been flashed or tested on real hardware — no device is attached to this session. "Green build" means it compiles; DRV2605 detection, haptic feel, pairing, and the piezo tone all need physical bring-up. OLED enhancement modules (`zmk-nice-oled`, `zmk-dongle-display`) and the dead custom LVGL status-screen code were left untouched, out of scope for this pass.
+
 ## 1. Correction to the brief: the repo is NOT pinned to v0.3.0
 
 `config/west.yml` already reads `revision: main`, and `.github/workflows/build.yml` already uses `@main`:
