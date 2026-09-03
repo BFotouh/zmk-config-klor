@@ -20,6 +20,36 @@
 		events = <0>;
 	};
 
+	// The dongle has no physical encoders, but the shared keymap's
+	// &sensors {...} block (setting triggers-per-rotation) needs these
+	// labels to resolve here too - central owns sensor-bindings, so it
+	// needs the same zmk,keymap-sensors shape as the halves. Left
+	// disabled; the a/b-gpios just reuse the same pro_micro pin refs
+	// klor_common.dtsi uses so the alps,ec11 binding validates, even
+	// though nothing is physically wired there on this board.
+	left_encoder: encoder_left {
+		compatible = "alps,ec11";
+		label = "LEFT_ENCODER";
+		a-gpios = <&pro_micro 21 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		b-gpios = <&pro_micro 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		steps = <30>;
+		status = "disabled";
+	};
+
+	right_encoder: encoder_right {
+		compatible = "alps,ec11";
+		label = "RIGHT_ENCODER";
+		a-gpios = <&pro_micro 20 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		b-gpios = <&pro_micro 21 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		steps = <30>;
+		status = "disabled";
+	};
+
+	sensors: sensors {
+		compatible = "zmk,keymap-sensors";
+		sensors = <&left_encoder &right_encoder>;
+	};
+
 	// Must match klor.dtsi's default_transform exactly (same node name,
 	// same map) - ZMK requires identical matrix transforms/physical
 	// layouts, with identical devicetree node names, across every part
