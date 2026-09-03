@@ -3,7 +3,7 @@ if SHIELD_KLOR_LEFT
     config ZMK_KEYBOARD_NAME
         default "KLOR"
 
-    config ZMK_SPLIT_BLE_ROLE_CENTRAL
+    config ZMK_SPLIT_ROLE_CENTRAL
         default y
 
 endif # LEFT
@@ -15,6 +15,15 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
     config ZMK_SPLIT
         default y
 
+# Only whichever build actually resolves to central (either via the
+# default above, or via a peripheral cmake-args override) gets Studio's
+# RPC subsystem built in - it costs real RAM, so peripherals skip it.
+if ZMK_SPLIT_ROLE_CENTRAL
+
+    config ZMK_STUDIO
+        default y
+
+endif # ZMK_SPLIT_ROLE_CENTRAL
 
 if ZMK_DISPLAY
 
