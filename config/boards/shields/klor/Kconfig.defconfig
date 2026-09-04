@@ -30,24 +30,35 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
         default y
 
     # Power saving: RGB turns off after CONFIG_ZMK_IDLE_TIMEOUT (30s
-    # default) of inactivity - the same timeout that already blanks the
-    # OLED via ZMK_DISPLAY_BLANK_ON_IDLE.
+    # default) of inactivity.
     #
-    # Deliberately NOT set here, both learned the hard way:
+    # Deliberately NOT set here:
     #  * ZMK_RGB_UNDERGLOW_AUTO_OFF_USB - kills RGB whenever USB is
     #    disconnected, which for a dongle setup means "always", since
     #    the halves normally run wireless.
-    #  * ZMK_SLEEP - deep sleep cuts the EXT_POWER rail, and on
-    #    nice!nano that rail feeds BOTH the OLED and the LED strip, so
-    #    it takes out the display and underglow together. ZMK persists
-    #    that off state, so it survives reboots. If deep sleep is worth
-    #    revisiting for battery life later, do it only alongside the
-    #    &ext_power EP_ON recovery binding on the ADJUST layer.
+    #  * ZMK_SLEEP - deep sleep cuts the EXT_POWER rail and ZMK persists
+    #    that off state, surviving reboots, with no bound recovery key
+    #    at the time this was tried. (Turned out unrelated to the OLED
+    #    issue below - EXT_POWER only gates this board's own onboard
+    #    regulator pin, not a rail shared with the halves' OLED/LED -
+    #    but still not worth deep sleep's downside without revisiting
+    #    the recovery story properly.)
     config ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE
         default y
 
     config ZMK_DISPLAY
         default y
+
+    # Deliberately disabled, confirmed via real hardware testing: ZMK's
+    # SSD1306 driver doesn't re-run its init sequence after the display
+    # is blanked, so it goes dark on idle and never comes back - unlike
+    # RGB_UNDERGLOW_AUTO_OFF_IDLE above, which works fine because
+    # "waking" an LED strip just means writing fresh color data, not
+    # reinitializing a whole controller chip. This is a known, still-
+    # open upstream ZMK bug (zmkfirmware/zmk#674), not something in this
+    # config - an always-on OLED beats a permanently-dark one.
+    config ZMK_DISPLAY_BLANK_ON_IDLE
+        default n
 
 if ZMK_DISPLAY
 
@@ -84,6 +95,19 @@ endif # LEFT RIGHT
 
 
 if SHIELD_KLOR_DONGLE
+
+    # The dongle has no LED strip of its own, but RAISE's RGB_TOG/etc.
+    # bindings are processed here (keymap logic is central-only) -
+    # without this, ZMK doesn't compile in behavior_rgb_underglow.c at
+    # all on this build, so pressing those keys silently does nothing
+    # (confirmed via real hardware testing - RAISE itself activated
+    # fine, RGB_TOG specifically no-opped). RGB underglow is one of
+    # ZMK's "global" behaviors - designed to auto-relay from whichever
+    # device processes the keymap to every part with actual underglow
+    # hardware - but that only works if the sending device has the
+    # behavior compiled in to begin with.
+    config ZMK_RGB_UNDERGLOW
+        default y
 
     # Max 16 characters
     config ZMK_KEYBOARD_NAME
