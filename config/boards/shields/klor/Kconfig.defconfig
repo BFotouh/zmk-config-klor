@@ -49,6 +49,18 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
     config ZMK_DISPLAY
         default y
 
+    # OLED stays on permanently rather than blanking on idle. Root
+    # cause traced by hand through ZMK's own source (activity.c,
+    # split/peripheral.c, display/main.c) - all three correctly wire up
+    # local key presses -> activity state -> display wake, even on a
+    # peripheral. The remaining suspect is the SSD1306 Zephyr driver's
+    # display_blanking_off() not properly restoring the panel after
+    # blanking - a known, still-open upstream bug (zmkfirmware/zmk#674)
+    # - not fixable from this config. An always-on screen beats one
+    # that goes dark after the first idle timeout and never returns.
+    config ZMK_DISPLAY_BLANK_ON_IDLE
+        default n
+
 if ZMK_DISPLAY
 
     config I2C
@@ -85,14 +97,15 @@ endif # LEFT RIGHT
 
 if SHIELD_KLOR_DONGLE
 
-    # TEMPORARILY REMOVED for a diagnostic test: does enabling RGB
-    # underglow's split-sync traffic on the dongle interfere with the
-    # halves' OLED wake-from-idle behavior? (RGB_TOG will silently
-    # no-op again on RAISE until this is re-added - see git history/
-    # MIGRATION_NOTES.md for why it was added in the first place.)
-    #
-    # config ZMK_RGB_UNDERGLOW
-    #     default y
+    # The dongle has no LED strip of its own, but RAISE's RGB_TOG/etc.
+    # bindings are processed here (keymap logic is central-only) -
+    # without this, ZMK doesn't compile in behavior_rgb_underglow.c at
+    # all on this build, so pressing those keys silently does nothing.
+    # Confirmed via a real hardware test that this is NOT the cause of
+    # the halves' OLED wake-from-idle bug (disabling this entirely
+    # didn't change that behavior at all) - restoring it.
+    config ZMK_RGB_UNDERGLOW
+        default y
 
     # Max 16 characters
     config ZMK_KEYBOARD_NAME
