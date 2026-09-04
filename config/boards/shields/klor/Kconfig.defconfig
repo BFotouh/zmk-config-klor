@@ -49,17 +49,10 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
     config ZMK_DISPLAY
         default y
 
-    # OLED stays on permanently rather than blanking on idle. Root
-    # cause traced by hand through ZMK's own source (activity.c,
-    # split/peripheral.c, display/main.c) - all three correctly wire up
-    # local key presses -> activity state -> display wake, even on a
-    # peripheral. The remaining suspect is the SSD1306 Zephyr driver's
-    # display_blanking_off() not properly restoring the panel after
-    # blanking - a known, still-open upstream bug (zmkfirmware/zmk#674)
-    # - not fixable from this config. An always-on screen beats one
-    # that goes dark after the first idle timeout and never returns.
-    config ZMK_DISPLAY_BLANK_ON_IDLE
-        default n
+    # OLED always-on (not blanking on idle) is set in klor.conf instead
+    # of here - a Kconfig.defconfig "default n" for
+    # ZMK_DISPLAY_BLANK_ON_IDLE didn't actually take effect (verified
+    # via CI), so it's forced via klor.conf's CONFIG_ line instead.
 
 if ZMK_DISPLAY
 
