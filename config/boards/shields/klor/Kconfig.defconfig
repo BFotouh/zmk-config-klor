@@ -29,6 +29,24 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
     config ZMK_RGB_UNDERGLOW
         default y
 
+    # Power saving: RGB turns off after CONFIG_ZMK_IDLE_TIMEOUT (30s
+    # default) of inactivity - the same timeout that already blanks the
+    # OLED - and also when unplugged from USB. Deep sleep after 15min
+    # idle is the single biggest battery win available; not set on the
+    # dongle (SHIELD_KLOR_DONGLE below), which is USB-powered and should
+    # stay instantly responsive rather than needing a wake-up.
+    config ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE
+        default y
+
+    config ZMK_RGB_UNDERGLOW_AUTO_OFF_USB
+        default y
+
+    config ZMK_SLEEP
+        default y
+
+    config ZMK_IDLE_SLEEP_TIMEOUT
+        default 900000
+
     config ZMK_DISPLAY
         default y
 
