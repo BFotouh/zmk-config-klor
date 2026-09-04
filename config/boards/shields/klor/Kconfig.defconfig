@@ -49,17 +49,6 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
     config ZMK_DISPLAY
         default y
 
-    # Deliberately disabled, confirmed via real hardware testing: ZMK's
-    # SSD1306 driver doesn't re-run its init sequence after the display
-    # is blanked, so it goes dark on idle and never comes back - unlike
-    # RGB_UNDERGLOW_AUTO_OFF_IDLE above, which works fine because
-    # "waking" an LED strip just means writing fresh color data, not
-    # reinitializing a whole controller chip. This is a known, still-
-    # open upstream ZMK bug (zmkfirmware/zmk#674), not something in this
-    # config - an always-on OLED beats a permanently-dark one.
-    config ZMK_DISPLAY_BLANK_ON_IDLE
-        default n
-
 if ZMK_DISPLAY
 
     config I2C
