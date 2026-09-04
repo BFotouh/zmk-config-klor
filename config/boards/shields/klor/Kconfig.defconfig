@@ -85,18 +85,14 @@ endif # LEFT RIGHT
 
 if SHIELD_KLOR_DONGLE
 
-    # The dongle has no LED strip of its own, but RAISE's RGB_TOG/etc.
-    # bindings are processed here (keymap logic is central-only) -
-    # without this, ZMK doesn't compile in behavior_rgb_underglow.c at
-    # all on this build, so pressing those keys silently does nothing
-    # (confirmed via real hardware testing - RAISE itself activated
-    # fine, RGB_TOG specifically no-opped). RGB underglow is one of
-    # ZMK's "global" behaviors - designed to auto-relay from whichever
-    # device processes the keymap to every part with actual underglow
-    # hardware - but that only works if the sending device has the
-    # behavior compiled in to begin with.
-    config ZMK_RGB_UNDERGLOW
-        default y
+    # TEMPORARILY REMOVED for a diagnostic test: does enabling RGB
+    # underglow's split-sync traffic on the dongle interfere with the
+    # halves' OLED wake-from-idle behavior? (RGB_TOG will silently
+    # no-op again on RAISE until this is re-added - see git history/
+    # MIGRATION_NOTES.md for why it was added in the first place.)
+    #
+    # config ZMK_RGB_UNDERGLOW
+    #     default y
 
     # Max 16 characters
     config ZMK_KEYBOARD_NAME
