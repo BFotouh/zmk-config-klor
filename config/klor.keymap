@@ -77,6 +77,15 @@
                 key-positions = <1 3>;
                 bindings = <&macro_terminal>;
             };
+            // Hold Q + P together (position 0 = Q, position 9 = P) to
+            // unlock ZMK Studio - required before Studio can push any
+            // change to the keyboard. Deliberately a wide two-hand
+            // chord so it won't trigger by accident while typing.
+            combo_studio_unlock {
+                timeout-ms = <100>;
+                key-positions = <0 9>;
+                bindings = <&studio_unlock>;
+            };
      };
 
      macros {
