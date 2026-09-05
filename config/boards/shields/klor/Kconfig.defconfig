@@ -31,13 +31,22 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
 
     # CRITICAL: must stay off. When RGB turns off, zmk_rgb_underglow_off()
     # calls ext_power_disable() if this is enabled - and on nice!nano that
-    # rail is the switched 3.3V header output (P0.13) feeding BOTH the LED
-    # strip and the OLED, so the display loses power too and never comes
-    # back, because the SSD1306 isn't re-initialized when power returns
-    # (upstream zmkfirmware/zmk#674, "OLED Re-init on ext_pwr on"). Worse,
-    # ext_power_save_state() persists that off state to NVS, so it survives
-    # reboots - and with this symbol off there is no longer any code path
-    # that re-enables the rail, only the &ext_power EP_ON key on ADJUST.
+    # is the switched 3.3V header output (P0.13), which on this board feeds
+    # the OLED. The display then never comes back, because the SSD1306
+    # isn't re-initialized when power returns (upstream zmkfirmware/zmk#674,
+    # "OLED Re-init on ext_pwr on"). Worse, ext_power_save_state() persists
+    # the off state to NVS on a 60s debounce, so it can survive reboots -
+    # and with this symbol off, nothing re-enables the rail automatically;
+    # only the &ext_power EP_ON key on ADJUST does.
+    #
+    # What is NOT on that rail: the LED strip. Established by hardware test
+    # - pressing EP_OFF kills the OLED while the underglow keeps animating
+    # normally, so the SK6812s run from unswitched power (which also makes
+    # sense at 21 LEDs, far more current than that rail should carry). An
+    # earlier revision of this comment claimed the rail fed both; it does
+    # not. Consequence: the underglow can never be truly powered down from
+    # firmware. The most that AUTO_OFF_IDLE below can do is write black,
+    # leaving the controllers' ~1mA each quiescent draw (~20mA for 21).
     #
     # This override DOES take effect. app/Kconfig sources this file
     # ($(ZMK_CONFIG)/boards/shields/*/Kconfig.defconfig, ~line 721) BEFORE
@@ -51,24 +60,31 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
     config ZMK_RGB_UNDERGLOW_EXT_POWER
         default n
 
+    # Underglow goes dark after CONFIG_ZMK_IDLE_TIMEOUT (30s) and returns
+    # on the next keypress. Safe now that RGB_UNDERGLOW_EXT_POWER is off:
+    # this only writes black to the strip, it no longer drags the OLED's
+    # rail down with it.
+    #
+    # Known, accepted wart: zmk_rgb_underglow_off() persists on=false to
+    # NVS, and rgb_settings_set() restores that over
+    # ZMK_RGB_UNDERGLOW_ON_START at boot. rgb_underglow_auto_state() then
+    # latches it - the first idle records rgb_state_before_sleeping=false,
+    # so the matching wake calls off() again. So after a full power cycle
+    # the underglow comes up dark and stays dark until someone presses
+    # RGB_TOG (RAISE + Q) once. ZMK offers no way to get idle-off without
+    # that flash write; there is no per-subsystem persistence toggle, and
+    # raising ZMK_SETTINGS_SAVE_DEBOUNCE to dodge it would also delay BLE
+    # profile and ext_power saves. One keypress per power-on was judged
+    # the better trade against leaving 21 LEDs lit continuously.
+    config ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE
+        default y
+
     # Deliberately NOT set here:
     #  * ZMK_RGB_UNDERGLOW_AUTO_OFF_USB - kills RGB whenever USB is
     #    disconnected, which for a dongle setup means "always", since the
     #    halves normally run wireless.
     #  * ZMK_SLEEP - deep sleep cuts the same ext_power rail, with the same
-    #    persisted-off consequence described above.
-    #  * ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE - tried, reverted. It behaves fine
-    #    within a session (wake restores the pre-idle state), but
-    #    zmk_rgb_underglow_off() persists on=false to NVS on every single
-    #    idle, and rgb_settings_set() restores that over
-    #    ZMK_RGB_UNDERGLOW_ON_START at boot. rgb_underglow_auto_state()
-    #    then latches it shut: the first idle records
-    #    rgb_state_before_sleeping=false, so the matching wake calls off()
-    #    again. Net effect - after any power cycle the underglow is dark
-    #    forever until someone manually presses RGB_TOG. Re-add these two
-    #    lines if the battery saving is worth that trade:
-    #        config ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE
-    #            default y
+    #    persisted-off consequence for the OLED described above.
 
     config ZMK_DISPLAY
         default y

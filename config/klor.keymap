@@ -206,7 +206,7 @@ label= "LOWER"                                                 ;
 label= "ADJUST"                                                ;
 // └───────────────────────────────────────────────────────────┘
 /*           ┌─────────┬─────────┬─────────┬─────────┬─────────┐                    ┌─────────┬─────────┬─────────┬─────────┬─────────┐
-             │ BT_CLR  │  EP_ON  │ EP_OFF  │ EP_TOG  │         │                    │         │         │         │         │ BT_CLR  │
+             │ BT_CLR  │  EP_ON  │         │         │         │                    │         │         │         │         │ BT_CLR  │
    ┌─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤                    ├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┐
    │         │ BT_NXT  │ OUT_USB │ OUT_BLE │ OUT_TOG │         │                    │         │         │         │         │ BT_NXT  │         │
    ├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤╭────────╮╭────────╮├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
@@ -216,7 +216,7 @@ label= "ADJUST"                                                ;
                                  └─────────┴─────────┴─────────┴─────────┘└─────────┴─────────┴─────────┴─────────┘ */ 
  bindings = <
  //╷         ╷         ╷         ╷         ╷         ╷         ╷         ╷╷         ╷         ╷         ╷         ╷         ╷         ╷         ╷
-             &bt BT_CLR &ext_power EP_ON &ext_power EP_OFF &ext_power EP_TOG &trans                         &trans    &trans    &trans    &trans    &bt BT_CLR
+             &bt BT_CLR &ext_power EP_ON &trans            &trans            &trans                         &trans    &trans    &trans    &trans    &bt BT_CLR
     &trans   &bt BT_NXT &out OUT_USB &out OUT_BLE &out OUT_TOG &trans                         &trans    &trans    &trans    &trans    &bt BT_NXT   &trans
     &trans   &bt BT_PRV &trans    &trans    &trans    &trans    &kp C_MUTE  &kp K_PP &trans    &trans    &trans    &trans    &bt BT_PRV   &trans
                                   &trans    &trans    &trans    &trans      &trans   &trans    &trans    &trans    
