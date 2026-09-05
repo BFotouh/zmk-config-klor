@@ -26,6 +26,15 @@
 #define LOWER  2
 #define ADJUST 3
 
+// Microphone mute, sent as a hyper combo (Ctrl+Shift+Opt+Cmd+M) that
+// nothing on macOS claims. ZMK cannot send a real mic mute: its HID
+// report descriptor carries only the Keyboard, Consumer and Mouse pages,
+// and "Phone Mute" lives on the Telephony page, which ZMK does not
+// implement. C_MUTE is speaker mute, not microphone. macOS has no global
+// mic-mute shortcut of its own either, so the Mac side has to listen for
+// this combo - see the readme for the Shortcuts.app setup.
+#define MIC_MUTE LC(LS(LA(LG(M))))
+
 &sensors {
     left_encoder {
         triggers-per-rotation = <15>;
@@ -132,7 +141,7 @@ label= "BASE"                                                  ;
    ┌─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤                    ├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┐
    │   TAB   │    A    │    S    │    D    │    F    │    G    │                    │    H    │    J    │    K    │    L    │    ;    │    '    │
    ├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤╭────────╮╭────────╮├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
-   │   CTRL  │    Z    │    X    │    C    │    V    │    B    ││  MUTE  ││PLY/PSE ││    N    │    M    │    ,    │    .    │    /    │    \    │
+   │   CTRL  │    Z    │    X    │    C    │    V    │    B    ││  MUTE  ││MIC MUTE││    N    │    M    │    ,    │    .    │    /    │    \    │
    └─────────┴─────────┴─────────┼─────────┼─────────┼─────────┼╰────────╯╰────────╯┼─────────┼─────────┼─────────┼─────────┴─────────┴─────────┘
                                  │  LALT   │  LOWER  │  RALT   │  SPACE  ││  BSPCE  │  ENTER  │  RAISE  │    DEL  │  
                                  └─────────┴─────────┴─────────┴─────────┘└─────────┴─────────┴─────────┴─────────┘ */ 
@@ -140,10 +149,16 @@ label= "BASE"                                                  ;
  //╷         ╷         ╷         ╷         ╷         ╷         ╷         ╷╷         ╷         ╷         ╷         ╷         ╷         ╷         ╷
               &kp Q     &kp W     &kp E     &kp R     &kp T                          &kp Y     &kp U     &kp I     &kp O     &kp P
     &kp ESC   &hm LGUI A  &hm LALT S  &hm LCTRL D  &hm LSHFT F &kp G                          &kp H   &hm RSHFT J &hm RCTRL K &hm RALT L  &hm RGUI SEMI &kp SQT
-    &kp TAB     &kp Z     &kp X     &kp C     &kp V     &kp B     &kp C_MUTE     &kp K_PP    &kp N     &kp M     &kp COMMA &kp DOT   &kp FSLH  &kp BSLH
+    &kp TAB     &kp Z     &kp X     &kp C     &kp V     &kp B     &kp C_MUTE     &kp MIC_MUTE &kp N     &kp M     &kp COMMA &kp DOT   &kp FSLH  &kp BSLH
                                   &kp LALT &mo LOWER &kp DEL  &kp SPACE   &kp RET   &kp BSPC  &mo RAISE &kp DEL
                         >;
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_AC_FORWARD C_AC_BACK>;
+            // Left encoder: volume. Right encoder: screen brightness. The index
+            // here is the sensor's position in klor_common.dtsi's
+            // sensors = <&left_encoder &right_encoder>, which is what each
+            // half reports over the split link and what the dongle indexes
+            // this list with - so entry 0 is always the left encoder and
+            // entry 1 the right, regardless of which half sent it.
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_BRI_UP C_BRI_DN>;
                 };
 
 // ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄

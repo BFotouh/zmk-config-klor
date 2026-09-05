@@ -32,5 +32,33 @@ Polydactyl is the default layout. If you choose one of the other layouts you can
 
 ## KNOWN ISSUES
 
-- The encoder on the secondary side doesn't work yet. This is a limitation of ZMK.
+- ~~The encoder on the secondary side doesn't work yet.~~ No longer true on this
+  config. With the dongle central, *both* halves are peripherals and both
+  encoders report fine. Each half sends its sensor's index within
+  `sensors = <&left_encoder &right_encoder>`, so entry 0 of `sensor-bindings`
+  is always the left encoder and entry 1 the right, whichever half sent it.
 - Need to add the code for the Pixart Paw3204 trackball.
+
+## MIC MUTE SETUP (macOS)
+
+The right encoder's push button sends **Ctrl+Shift+Opt+Cmd+M**, not a mic mute.
+ZMK cannot send a real one: its HID report descriptor carries only the
+Keyboard, Consumer and Mouse pages, and "Phone Mute" lives on the Telephony
+page, which ZMK doesn't implement. `C_MUTE` is speaker mute. macOS has no
+built-in global mic-mute shortcut either, so the Mac has to listen for the
+combo:
+
+1. Open **Shortcuts.app** and create a new shortcut named `Toggle Mic`.
+2. Add a **Run Shell Script** action with:
+
+   ```bash
+   if [ "$(osascript -e 'input volume of (get volume settings)')" = "0" ]; then osascript -e 'set volume input volume 100'; else osascript -e 'set volume input volume 0'; fi
+   ```
+
+3. In the shortcut's details pane, **Add Keyboard Shortcut** and press
+   Ctrl+Shift+Opt+Cmd+M (the encoder button sends exactly this, so you can
+   just press the encoder).
+
+This mutes at the system input level, so it applies to every app rather than
+one conferencing client. Note that some apps (Zoom among them) hold their own
+mute state independently of the system input volume.
