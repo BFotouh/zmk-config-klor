@@ -46,13 +46,26 @@ if SHIELD_KLOR_LEFT || SHIELD_KLOR_RIGHT
     config ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE
         default y
 
+    # CRITICAL: must stay off. When RGB turns off (including via
+    # AUTO_OFF_IDLE above), zmk_rgb_underglow_off() calls
+    # ext_power_disable() if this is enabled - and on this board the
+    # OLED shares that same rail, so it loses power too. The display
+    # never recovers, because the SSD1306 isn't re-initialized when
+    # power returns (upstream bug zmkfirmware/zmk#674, literally titled
+    # "OLED Re-init on ext_pwr on"). Disabling this keeps RGB's idle
+    # power saving (the LEDs still go dark) without taking the display
+    # down with it.
+    config ZMK_RGB_UNDERGLOW_EXT_POWER
+        default n
+
     config ZMK_DISPLAY
         default y
 
-    # OLED always-on (not blanking on idle) is set in klor.conf instead
-    # of here - a Kconfig.defconfig "default n" for
-    # ZMK_DISPLAY_BLANK_ON_IDLE didn't actually take effect (verified
-    # via CI), so it's forced via klor.conf's CONFIG_ line instead.
+    # ZMK_DISPLAY_BLANK_ON_IDLE deliberately left at ZMK's own default.
+    # The OLED going dark permanently was never caused by display
+    # blanking - it was RGB's idle-off cutting the shared ext_power
+    # rail (see ZMK_RGB_UNDERGLOW_EXT_POWER above). With that fixed,
+    # normal blank-on-idle/wake behaves as it always did.
 
 if ZMK_DISPLAY
 
